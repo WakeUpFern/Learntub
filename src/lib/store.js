@@ -128,6 +128,7 @@ export async function getCourse(id, userId) {
             position: m.position,
             isCompleted: m.is_completed,
             completedAt: m.completed_at,
+            youtubeId: m.youtube_id,
         }));
 
         const completed = modules.filter(m => m.isCompleted).length;
@@ -190,7 +191,6 @@ export async function addCourse({ youtubeId, title, thumbnailUrl, channelName, m
             return { error: courseError.message || 'Error al guardar el curso en Supabase' };
         }
 
-        // Insertar módulos
         const modulesToInsert = chaptersData.map((ch, i) => ({
             course_id: course.id,
             title: ch.title,
@@ -198,6 +198,7 @@ export async function addCourse({ youtubeId, title, thumbnailUrl, channelName, m
             end_time: ch.endTime,
             position: ch.position || i + 1,
             is_completed: false,
+            youtube_id: ch.youtubeId,
         }));
 
         const { data: modules, error: modulesError } = await supabase
@@ -224,6 +225,7 @@ export async function addCourse({ youtubeId, title, thumbnailUrl, channelName, m
                 position: m.position,
                 isCompleted: m.is_completed,
                 completedAt: m.completed_at,
+                youtubeId: m.youtube_id,
             })),
             totalModules: modules?.length || 0,
             completedModules: 0,
@@ -251,6 +253,7 @@ export async function addCourse({ youtubeId, title, thumbnailUrl, channelName, m
         position: ch.position || i + 1,
         isCompleted: false,
         completedAt: null,
+        youtubeId: ch.youtubeId,
     }));
 
     data.courses.push(course);
@@ -326,6 +329,7 @@ export async function toggleModuleComplete(moduleId, userId) {
             position: updated.position,
             isCompleted: updated.is_completed,
             completedAt: updated.completed_at,
+            youtubeId: updated.youtube_id,
         };
     }
 

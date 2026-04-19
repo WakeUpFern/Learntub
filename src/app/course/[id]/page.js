@@ -153,7 +153,7 @@ export default function CourseDetailPage() {
                     <>
                         <div className="course-player-wrap">
                             <YouTubePlayer
-                                videoId={course.youtubeId}
+                                videoId={activeModule.youtubeId || course.youtubeId}
                                 startTime={activeModule.startTime}
                                 endTime={activeModule.endTime}
                                 onEnded={handleModuleEnded}

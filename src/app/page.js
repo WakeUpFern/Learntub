@@ -90,7 +90,7 @@ export default function LandingPage() {
 
       <footer className="landing-footer">
         <span>© {new Date().getFullYear()} Learntub</span>
-        <span>Hecho con 🫶 para aprender mejor</span>
+        <span>Hecho con ❤️ para aprender mejor</span>
       </footer>
     </div>
   );

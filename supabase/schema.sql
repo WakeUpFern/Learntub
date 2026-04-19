@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS modules (
   end_time INTEGER,
   position INTEGER NOT NULL DEFAULT 0,
   is_completed BOOLEAN DEFAULT false,
-  completed_at TIMESTAMPTZ
+  completed_at TIMESTAMPTZ,
+  youtube_id TEXT
 );
 
 -- Indexes

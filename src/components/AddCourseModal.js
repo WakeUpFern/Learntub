@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { extractVideoId, getThumbnailUrl } from '@/lib/youtube';
+import { extractYouTubeUrlInfo, getThumbnailUrl } from '@/lib/youtube';
 import { parseChapters, hasChapters, secondsToTimestamp, formatDuration } from '@/lib/chapterParser';
 
 /**
@@ -20,10 +20,10 @@ export default function AddCourseModal({ isOpen, onClose, onAdd }) {
 
     const handleFetchVideo = async () => {
         setError('');
-        const videoId = extractVideoId(url);
+        const info = extractYouTubeUrlInfo(url);
 
-        if (!videoId) {
-            setError('URL de YouTube inválida. Intenta con un formato como: https://youtube.com/watch?v=...');
+        if (!info) {
+            setError('URL de YouTube inválida. Intenta con un link de video o playlist.');
             return;
         }
 
