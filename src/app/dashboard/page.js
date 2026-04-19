@@ -141,7 +141,13 @@ export default function DashboardPage() {
 
                 {/* Usuario */}
                 {user ? (
-                    <div className="sidebar-user">
+                    <div 
+                        className="sidebar-user" 
+                        style={{ cursor: 'pointer', transition: 'background 0.2s', padding: '12px', borderRadius: '8px', border: '1px solid transparent' }}
+                        onMouseEnter={(e) => e.currentTarget.style.borderColor = '#ccc'}
+                        onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}
+                        onClick={() => router.push('/profile')}
+                    >
                         {user.user_metadata?.avatar_url ? (
                             <img src={user.user_metadata.avatar_url} alt="" className="user-avatar" />
                         ) : (
@@ -149,11 +155,11 @@ export default function DashboardPage() {
                                 {(user.user_metadata?.full_name || user.email || '?').charAt(0).toUpperCase()}
                             </div>
                         )}
-                        <div>
+                        <div style={{ flex: 1 }}>
                             <span className="user-name">{user.user_metadata?.full_name || 'Usuario'}</span>
                             <span className="user-email">{user.email}</span>
                         </div>
-                        <button className="btn-logout" onClick={handleSignOut} title="Salir">
+                        <button className="btn-logout" onClick={(e) => { e.stopPropagation(); handleSignOut(); }} title="Salir">
                             ×
                         </button>
                     </div>

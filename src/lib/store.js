@@ -363,6 +363,11 @@ export async function getProgress(userId) {
             .select('course_id, is_completed')
             .in('course_id', courseIds);
 
+        const { data: courseDetails } = await supabase
+            .from('courses')
+            .select('channel_name')
+            .in('id', courseIds);
+
         const totalModules = modules?.length || 0;
         const completedModules = modules?.filter(m => m.is_completed).length || 0;
 
@@ -371,11 +376,22 @@ export async function getProgress(userId) {
             return mods.length > 0 && mods.every(m => m.is_completed);
         }).length;
 
+        // Estadísticas de canales
+        const channelCounts = {};
+        courseDetails?.forEach(c => {
+            channelCounts[c.channel_name] = (channelCounts[c.channel_name] || 0) + 1;
+        });
+        const topChannels = Object.entries(channelCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([name, count]) => ({ name, count }));
+
         return {
             totalCourses: courses.length,
             completedCourses,
             totalModules,
             completedModules,
+            topChannels
         };
     }
 
@@ -389,5 +405,87 @@ export async function getProgress(userId) {
         return mods.length > 0 && mods.every(m => m.isCompleted);
     }).length;
 
-    return { totalCourses, completedCourses, totalModules, completedModules };
+    const channelCounts = {};
+    data.courses.forEach(c => {
+        channelCounts[c.channelName] = (channelCounts[c.channelName] || 0) + 1;
+    });
+    const topChannels = Object.entries(channelCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([name, count]) => ({ name, count }));
+
+    return { totalCourses, completedCourses, totalModules, completedModules, topChannels };
+}
+
+export async function getActivityHistory(userId) {
+    let completedDates = [];
+
+    if (useSupabase(userId)) {
+        const supabase = getSupabaseClient();
+        const { data: courses } = await supabase
+            .from('courses')
+            .select('id')
+            .eq('user_id', userId);
+
+        if (courses && courses.length > 0) {
+            const courseIds = courses.map(c => c.id);
+            const { data: modules } = await supabase
+                .from('modules')
+                .select('completed_at')
+                .in('course_id', courseIds)
+                .eq('is_completed', true)
+                .not('completed_at', 'is', null);
+
+            if (modules) {
+                completedDates = modules.map(m => m.completed_at);
+            }
+        }
+    } else {
+        // Fallback: localStorage
+        const data = getLocalData();
+        completedDates = data.modules
+            .filter(m => m.isCompleted && m.completedAt)
+            .map(m => m.completedAt);
+    }
+
+    // Convertir a mapa de "YYYY-MM-DD": contador
+    const historyMap = {};
+    const uniqueDates = new Set();
+    completedDates.forEach(dateStr => {
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+            const dayKey = date.toISOString().split('T')[0];
+            historyMap[dayKey] = (historyMap[dayKey] || 0) + 1;
+            uniqueDates.add(dayKey);
+        }
+    });
+
+    // Calcular Racha (Streak)
+    let streak = 0;
+    const sortedDates = Array.from(uniqueDates).sort((a, b) => new Date(b) - new Date(a));
+    
+    if (sortedDates.length > 0) {
+        let current = new Date();
+        let todayKey = current.toISOString().split('T')[0];
+        let yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        let yesterdayKey = yesterday.toISOString().split('T')[0];
+
+        // Solo empezamos la racha si hubo actividad hoy o ayer
+        if (uniqueDates.has(todayKey) || uniqueDates.has(yesterdayKey)) {
+            let checkDate = uniqueDates.has(todayKey) ? current : yesterday;
+            
+            while (true) {
+                let key = checkDate.toISOString().split('T')[0];
+                if (uniqueDates.has(key)) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    return { historyMap, streak };
 }

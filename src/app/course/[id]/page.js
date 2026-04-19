@@ -14,6 +14,7 @@ export default function CourseDetailPage() {
     const [course, setCourse] = useState(null);
     const [activeModule, setActiveModule] = useState(null);
     const [mounted, setMounted] = useState(false);
+    const [autoplay, setAutoplay] = useState(true);
 
     const userId = user?.id || null;
 
@@ -27,7 +28,23 @@ export default function CourseDetailPage() {
         }
     }, [params.id, router, activeModule, userId]);
 
-    useEffect(() => { setMounted(true); }, []);
+    useEffect(() => { 
+        setMounted(true); 
+        const savedAutoplay = localStorage.getItem('learntub_autoplay');
+        if (savedAutoplay !== null) {
+            setAutoplay(savedAutoplay === 'true');
+        }
+        
+        // Listen for setting changes
+        const handleStorageChange = (e) => {
+            if (e.key === 'learntub_autoplay') {
+                setAutoplay(e.newValue === 'true');
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+
     useEffect(() => {
         if (mounted && !authLoading) loadCourse();
     }, [mounted, authLoading, loadCourse]);
@@ -44,8 +61,12 @@ export default function CourseDetailPage() {
         if (!wasCompleted && activeModule?.id === moduleId) {
             const currentIdx = updatedCourse.modules.findIndex(m => m.id === moduleId);
             if (currentIdx < updatedCourse.modules.length - 1) {
-                // Saltamos al siguiente módulo inmediatamente
-                setActiveModule(updatedCourse.modules[currentIdx + 1]);
+                // Saltamos al siguiente módulo inmediatamente solo si autoplay está activo
+                if (autoplay) {
+                    setActiveModule(updatedCourse.modules[currentIdx + 1]);
+                } else {
+                    setActiveModule(updatedCourse.modules[currentIdx]);
+                }
             } else {
                 // Es el último módulo, solo actualizamos su estado visual
                 setActiveModule(updatedCourse.modules[currentIdx]);
@@ -58,21 +79,15 @@ export default function CourseDetailPage() {
     };
 
     const handleModuleEnded = async () => {
-        if (!activeModule || !course) return;
-        
-        // Marcar como completado en el servidor
+        if (!activeModule) return;
         if (!activeModule.isCompleted) {
-            await toggleModuleComplete(activeModule.id, userId);
-        }
-
-        // Obtener datos frescos para que la lista lateral se actualice
-        const updatedCourse = await getCourse(params.id, userId);
-        setCourse(updatedCourse);
-
-        // Avanzar al siguiente módulo
-        const currentIdx = updatedCourse.modules.findIndex(m => m.id === activeModule.id);
-        if (currentIdx < updatedCourse.modules.length - 1) {
-            setActiveModule(updatedCourse.modules[currentIdx + 1]);
+            await handleToggleComplete(activeModule.id);
+        } else if (autoplay) {
+            // Si ya estaba completado, pero autoplay está activo, saltamos al siguiente
+            const currentIdx = course.modules.findIndex(m => m.id === activeModule.id);
+            if (currentIdx < course.modules.length - 1) {
+                setActiveModule(course.modules[currentIdx + 1]);
+            }
         }
     };
 
@@ -157,7 +172,7 @@ export default function CourseDetailPage() {
                                 startTime={activeModule.startTime}
                                 endTime={activeModule.endTime}
                                 onEnded={handleModuleEnded}
-                                autoplay={true}
+                                autoplay={autoplay}
                             />
                         </div>
                         <div className="active-module-info">

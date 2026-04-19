@@ -6,8 +6,63 @@
 
 :root {
   --font-mono: "JetBrains Mono", "Courier New", monospace;
-  --border: 2px solid #000;
-  --border-light: 1px solid #000;
+  --border: 2px solid var(--border-color, #000);
+  --border-light: 1px solid var(--border-color, #000);
+
+  /* Light Theme Variables */
+  --bg: #fff;
+  --bg-secondary: #f8f8f8;
+  --bg-tertiary: #eeeeee;
+  
+  --fg: #000;
+  --fg-muted: #555;
+  --muted: #555;
+  --fg-title: #000;
+  --fg-subtitle: #333;
+  --fg-accent: #000;
+  
+  --border-color: #000;
+  --border-light-color: #ccc;
+  
+  --muted-bg: var(--bg-tertiary);
+  
+  --btn-bg: #fff;
+  --btn-fg: #000;
+  --btn-primary-bg: #000;
+  --btn-primary-fg: #fff;
+  
+  --success-bg: #000;
+  --success-fg: #fff;
+  --error-bg: #f5f5f5;
+  --error-fg: #000;
+}
+
+[data-theme="gruvbox"] {
+  --bg: #282828 !important;
+  --bg-secondary: #3c3836 !important;
+  --bg-tertiary: #504945 !important;
+  
+  --fg: #ebdbb2 !important;
+  --fg-muted: #a89984 !important;
+  --muted: #a89984 !important;
+  --fg-title: #fabd2f !important; /* Yellow for titles */
+  --fg-subtitle: #8ec07c !important; /* Aqua for subtitles */
+  --fg-accent: #d3869b !important; /* Purple for highlights */
+  
+  --muted-bg: #3c3836 !important;
+  
+  --border-color: #ebdbb2 !important;
+  --border-light-color: #a89984 !important;
+  
+  --btn-bg: #282828 !important;
+  --btn-fg: #ebdbb2 !important;
+  --btn-primary-bg: #ebdbb2 !important;
+  --btn-primary-fg: #282828 !important;
+  
+  --success-bg: #b8bb26 !important; /* Green */
+  --success-fg: #282828 !important;
+  --error-bg: #fb4934 !important; /* Red */
+  --error-fg: #282828 !important;
 }
 
 * {
@@ -20,8 +75,8 @@
 }
 
 body {
-  background: #fff;
-  color: #000;
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.5;
@@ -29,12 +84,12 @@ body {
 }
 
 a {
-  color: #000;
+  color: var(--fg);
   text-decoration: none;
 }
 a:hover {
-  background: #000;
-  color: #fff;
+  background: var(--fg);
+  color: var(--bg);
 }
 
 /* ───────────────────────────────
@@ -55,7 +110,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  background: #fff;
+  background: var(--bg);
 }
 
 .sidebar-logo {
@@ -89,8 +144,8 @@ a:hover {
   padding: 9px 16px;
   border: none;
   border-bottom: var(--border-light);
-  background: #fff;
-  color: #000;
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-mono);
   font-size: 13px;
   cursor: pointer;
@@ -98,13 +153,13 @@ a:hover {
 }
 
 .sidebar-link:hover {
-  background: #000;
-  color: #fff;
+  background: var(--fg);
+  color: var(--bg);
 }
 
 .sidebar-link.active {
-  background: #000;
-  color: #fff;
+  background: var(--fg);
+  color: var(--bg);
 }
 
 .sidebar-link .count {
@@ -121,16 +176,16 @@ a:hover {
   padding: 7px 16px 7px 28px;
   border: none;
   border-bottom: var(--border-light);
-  background: #fff;
-  color: #000;
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-mono);
   font-size: 12px;
   cursor: pointer;
   text-align: left;
 }
-.sidebar-tree-item:hover { background: #000; color: #fff; }
-.sidebar-tree-item.active { background: #000; color: #fff; }
-.sidebar-tree-item.done { color: #555; }
+.sidebar-tree-item:hover { background: var(--fg); color: var(--bg); }
+.sidebar-tree-item.active { background: var(--fg); color: var(--bg); }
+.sidebar-tree-item.done { color: var(--fg-muted); }
 .sidebar-tree-item.done::before { content: "✓ "; }
 
 /* Stats block en sidebar */
@@ -159,12 +214,12 @@ a:hover {
   margin-top: 8px;
   height: 8px;
   border: var(--border-light);
-  background: #fff;
+  background: var(--bg);
 }
 
 .progress-fill {
   height: 100%;
-  background: #000;
+  background: var(--fg);
 }
 
 /* User section en sidebar */
@@ -188,8 +243,8 @@ a:hover {
   width: 28px;
   height: 28px;
   border: var(--border-light);
-  background: #000;
-  color: #fff;
+  background: var(--fg);
+  color: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -227,7 +282,7 @@ a:hover {
   font-family: var(--font-mono);
   font-size: 11px;
 }
-.btn-logout:hover { background: #000; color: #fff; }
+.btn-logout:hover { background: var(--fg); color: var(--bg); }
 
 /* MAIN AREA */
 .main-area {
@@ -246,7 +301,7 @@ a:hover {
   justify-content: space-between;
   padding: 12px 20px;
   border-bottom: var(--border);
-  background: #fff;
+  background: var(--bg);
 }
 
 .page-header h1 {
@@ -254,11 +309,11 @@ a:hover {
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-}
+ color: var(--fg-title); }
 
 .page-header .subtitle {
   font-size: 12px;
-  color: #555;
+  color: var(--fg-muted);
   margin-top: 2px;
 }
 
@@ -272,8 +327,8 @@ button, .btn {
   text-transform: uppercase;
   cursor: pointer;
   border: var(--border) !important;
-  background: #fff;
-  color: #000;
+  background: var(--bg);
+  color: var(--fg);
   padding: 6px 14px;
   display: inline-flex;
   align-items: center;
@@ -282,8 +337,8 @@ button, .btn {
 }
 
 button:hover, .btn:hover {
-  background: #000;
-  color: #fff;
+  background: var(--fg);
+  color: var(--bg);
 }
 
 button:active, .btn:active {
@@ -291,12 +346,12 @@ button:active, .btn:active {
 }
 
 .btn-primary {
-  background: #000;
-  color: #fff;
+  background: var(--fg);
+  color: var(--bg);
 }
 .btn-primary:hover {
-  background: #fff;
-  color: #000;
+  background: var(--bg);
+  color: var(--fg);
 }
 
 /* ───────────────────────────────
@@ -326,11 +381,11 @@ button:active, .btn:active {
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-}
+ color: var(--fg-title); }
 
 .dashboard-subtitle {
   font-size: 12px;
-  color: #555;
+  color: var(--fg-muted);
   margin-top: 2px;
 }
 
@@ -341,8 +396,8 @@ button:active, .btn:active {
 }
 
 .course-table thead th {
-  background: #000;
-  color: #fff;
+  background: var(--fg);
+  color: var(--bg);
   text-align: left;
   padding: 7px 12px;
   font-size: 11px;
@@ -358,7 +413,7 @@ button:active, .btn:active {
 }
 
 .course-table tbody tr:hover td {
-  background: #f5f5f5;
+  background: var(--bg-secondary);
 }
 
 .course-table td {
@@ -388,12 +443,12 @@ button:active, .btn:active {
 .inline-progress {
   height: 6px;
   border: var(--border-light);
-  background: #fff;
+  background: var(--bg);
   margin-bottom: 2px;
 }
 .inline-progress-fill {
   height: 100%;
-  background: #000;
+  background: var(--fg);
 }
 
 /* Estado badges */
@@ -406,9 +461,9 @@ button:active, .btn:active {
   display: inline-block;
   white-space: nowrap;
 }
-.status-badge.done { background: #000; color: #fff; }
+.status-badge.done { background: var(--fg); color: var(--bg); }
 .status-badge.active { border-style: solid; }
-.status-badge.pending { color: #555; }
+.status-badge.pending { color: var(--fg-muted); }
 
 /* Empty state */
 .dashboard-empty {
@@ -420,10 +475,10 @@ button:active, .btn:active {
   font-weight: bold;
   text-transform: uppercase;
   margin-bottom: 8px;
-}
+ color: var(--fg-title); }
 .dashboard-empty p {
   font-size: 12px;
-  color: #555;
+  color: var(--fg-muted);
   margin-bottom: 16px;
 }
 
@@ -444,7 +499,7 @@ button:active, .btn:active {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--bg);
 }
 
 .course-sidebar-header {
@@ -461,7 +516,7 @@ button:active, .btn:active {
 
 .course-sidebar-channel {
   font-size: 11px;
-  color: #555;
+  color: var(--fg-muted);
   margin-top: 2px;
 }
 
@@ -498,10 +553,10 @@ button:active, .btn:active {
   font-size: 12px;
 }
 
-.module-item:hover { background: #f5f5f5; }
-.module-item.active { background: #000; color: #fff; }
-.module-item.active .module-time { color: #ccc; }
-.module-item.completed .module-title { color: #555; }
+.module-item:hover { background: var(--bg-secondary); }
+.module-item.active { background: var(--fg); color: var(--bg); }
+.module-item.active .module-time { color: var(--fg-muted); }
+.module-item.completed .module-title { color: var(--fg-muted); }
 
 .module-num {
   font-size: 10px;
@@ -526,8 +581,8 @@ button:active, .btn:active {
   margin-top: 1px;
   flex-shrink: 0;
 }
-.module-check:hover { background: #000 !important; color: #fff; }
-.module-check.done { background: #000 !important; color: #fff; }
+.module-check:hover { background: var(--fg) !important; color: var(--bg); }
+.module-check.done { background: var(--fg) !important; color: var(--bg); }
 
 .module-text { flex: 1; min-width: 0; }
 .module-title {
@@ -537,7 +592,7 @@ button:active, .btn:active {
 }
 .module-time {
   font-size: 10px;
-  color: #777;
+  color: var(--fg-muted);
   display: block;
   margin-top: 2px;
 }
@@ -565,16 +620,16 @@ button:active, .btn:active {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
+ color: var(--fg-title); }
 
 .course-topbar .channel {
   font-size: 11px;
-  color: #555;
+  color: var(--fg-muted);
 }
 
 .course-player-wrap {
   border-bottom: var(--border);
-  background: #000;
+  background: var(--fg);
   aspect-ratio: 16/9;
   width: 100%;
 }
@@ -599,7 +654,7 @@ button:active, .btn:active {
 
 .ami-label {
   font-size: 11px;
-  color: #555;
+  color: var(--fg-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -664,7 +719,7 @@ button:active, .btn:active {
 .landing-desc {
   font-size: 13px;
   line-height: 1.7;
-  color: #333;
+  color: var(--fg-subtitle);
   max-width: 420px;
 }
 
@@ -719,7 +774,7 @@ button:active, .btn:active {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #555;
+  color: var(--fg-muted);
 }
 
 /* ───────────────────────────────
@@ -743,8 +798,8 @@ button:active, .btn:active {
 .login-box-header {
   padding: 14px 20px;
   border-bottom: var(--border);
-  background: #000;
-  color: #fff;
+  background: var(--fg);
+  color: var(--bg);
 }
 
 .login-box-header h1 {
@@ -752,11 +807,11 @@ button:active, .btn:active {
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-}
+ color: var(--fg-title); }
 
 .login-box-header p {
   font-size: 11px;
-  color: #ccc;
+  color: var(--fg-muted);
   margin-top: 2px;
 }
 
@@ -784,7 +839,7 @@ button:active, .btn:active {
 .login-divider {
   text-align: center;
   font-size: 11px;
-  color: #777;
+  color: var(--fg-muted);
   border-top: var(--border-light);
   padding-top: 12px;
 }
@@ -793,12 +848,12 @@ button:active, .btn:active {
   border: var(--border);
   padding: 8px 12px;
   font-size: 12px;
-  background: #f5f5f5;
+  background: var(--bg-secondary);
 }
 
 .login-footer-note {
   font-size: 11px;
-  color: #777;
+  color: var(--fg-muted);
   text-align: center;
   margin-top: 4px;
 }
@@ -817,7 +872,7 @@ button:active, .btn:active {
 }
 
 .modal-box {
-  background: #fff;
+  background: var(--bg);
   border: var(--border);
   width: 100%;
   max-width: 480px;
@@ -831,8 +886,8 @@ button:active, .btn:active {
   justify-content: space-between;
   padding: 14px 20px;
   border-bottom: var(--border);
-  background: #000;
-  color: #fff;
+  background: var(--fg);
+  color: var(--bg);
 }
 
 .modal-header h2 {
@@ -840,7 +895,7 @@ button:active, .btn:active {
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-}
+ color: var(--fg-title); }
 
 .modal-body {
   padding: 20px;
@@ -865,12 +920,12 @@ button:active, .btn:active {
   padding: 7px 10px;
   font-family: var(--font-mono);
   font-size: 12px;
-  background: #fff;
-  color: #000;
+  background: var(--bg);
+  color: var(--fg);
 }
 
 .form-input:focus {
-  outline: 2px solid #000;
+  outline: 2px solid var(--border-color);
   outline-offset: 2px;
 }
 
@@ -901,8 +956,8 @@ button:active, .btn:active {
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid #ccc;
-  border-top-color: #000;
+  border: 2px solid var(--border-light-color);
+  border-top-color: var(--fg);
   animation: spin 0.6s linear infinite;
 }
 
@@ -918,7 +973,7 @@ button:active, .btn:active {
   padding: 60px 20px;
   gap: 12px;
   font-size: 12px;
-  color: #555;
+  color: var(--fg-muted);
 }
 
 .dashboard-error-banner {
@@ -927,7 +982,7 @@ button:active, .btn:active {
   gap: 8px;
   padding: 10px 20px;
   border-bottom: var(--border);
-  background: #f5f5f5;
+  background: var(--bg-secondary);
   font-size: 12px;
 }
 
@@ -947,3 +1002,5 @@ button:active, .btn:active {
   border: var(--border-light);
   text-transform: uppercase;
 }
+
+strong { color: var(--fg-accent); }
