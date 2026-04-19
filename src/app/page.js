@@ -38,7 +38,7 @@ export default function LandingPage() {
               Comenzar Ahora
             </button>
             <a
-              href="https://github.com"
+              href="https://github.com/WakeUpFern/Learntub"
               target="_blank"
               rel="noopener noreferrer"
               className="btn"
@@ -90,7 +90,7 @@ export default function LandingPage() {
 
       <footer className="landing-footer">
         <span>© {new Date().getFullYear()} Learntub</span>
-        <span>Hecho para aprender mejor</span>
+        <span>Hecho con 🫶 para aprender mejor</span>
       </footer>
     </div>
   );
