@@ -94,44 +94,38 @@ export default function AddCourseModal({ isOpen, onClose, onAdd }) {
     };
 
     return (
-        <div className="modal-backdrop" onClick={handleReset}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={handleReset}>
+            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>{step === 1 ? 'Agregar Nuevo Curso' : 'Confirmar Capítulos'}</h2>
-                    <button className="modal-close" onClick={handleReset} aria-label="Cerrar">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
+                    <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '16px' }} onClick={handleReset} aria-label="Cerrar">
+                        ✕
                     </button>
                 </div>
 
                 {step === 1 ? (
                     <div className="modal-body">
-                        <div className="input-group">
-                            <label htmlFor="youtube-url">Link de YouTube</label>
-                            <div className="input-with-icon">
-                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="input-icon">
-                                    <path d="M17.5 10c0 1.5-.5 3-1.5 4.2a7.5 7.5 0 01-12-8.4A7.5 7.5 0 0117.5 10z" stroke="currentColor" strokeWidth="1.5" />
-                                    <path d="M8 7l5 3-5 3V7z" fill="currentColor" />
-                                </svg>
-                                <input
-                                    id="youtube-url"
-                                    type="url"
-                                    placeholder="https://www.youtube.com/watch?v=..."
-                                    value={url}
-                                    onChange={(e) => setUrl(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleFetchVideo()}
-                                    autoFocus
-                                />
-                            </div>
+                        <div className="form-field">
+                            <label className="form-label" htmlFor="youtube-url">Link de YouTube</label>
+                            <input
+                                className="form-input"
+                                id="youtube-url"
+                                type="url"
+                                placeholder="https://www.youtube.com/watch?v=..."
+                                value={url}
+                                onChange={(e) => setUrl(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleFetchVideo()}
+                                autoFocus
+                            />
                         </div>
 
                         {showManual && (
-                            <div className="input-group" style={{ marginTop: '1rem' }}>
-                                <label htmlFor="manual-desc">
+                            <div className="form-field" style={{ marginTop: '1rem' }}>
+                                <label className="form-label" htmlFor="manual-desc">
                                     Descripción del video (pega los timestamps aquí)
                                 </label>
                                 <textarea
+                                    className="form-input"
                                     id="manual-desc"
                                     placeholder={"0:00 Introducción\n5:30 Conceptos básicos\n15:00 Ejemplo práctico\n..."}
                                     value={manualDescription}
@@ -162,27 +156,27 @@ export default function AddCourseModal({ isOpen, onClose, onAdd }) {
                     <div className="modal-body">
                         {preview && (
                             <>
-                                <div className="preview-header">
+                                <div style={{ display: 'flex', gap: '12px', paddingBottom: '16px', borderBottom: '2px solid #000', marginBottom: '16px' }}>
                                     <img
                                         src={preview.thumbnailUrl}
                                         alt={preview.title}
-                                        className="preview-thumbnail"
+                                        style={{ width: '120px', height: '68px', objectFit: 'cover', border: '2px solid #000' }}
                                     />
-                                    <div className="preview-info">
-                                        <h3>{preview.title}</h3>
-                                        <p>{preview.channelName}</p>
-                                        <span className="chapter-count">
+                                    <div>
+                                        <h3 style={{ fontSize: '13px', fontWeight: 'bold' }}>{preview.title}</h3>
+                                        <p style={{ fontSize: '11px', color: '#555' }}>{preview.channelName}</p>
+                                        <span style={{ fontSize: '11px', fontWeight: 'bold' }}>
                                             {preview.chapters.length} capítulos detectados
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className="preview-chapters">
+                                <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '16px', fontSize: '12px' }}>
                                     {preview.chapters.map((ch, i) => (
-                                        <div key={i} className="preview-chapter-item">
-                                            <span className="chapter-num">{i + 1}</span>
-                                            <span className="chapter-title">{ch.title}</span>
-                                            <span className="chapter-time">
+                                        <div key={i} style={{ display: 'flex', gap: '8px', padding: '6px 0', borderBottom: '1px solid #ddd' }}>
+                                            <span style={{ fontWeight: 'bold', width: '20px' }}>{i + 1}.</span>
+                                            <span style={{ flex: 1 }}>{ch.title}</span>
+                                            <span style={{ color: '#555', fontSize: '10px' }}>
                                                 {secondsToTimestamp(ch.startTime)}
                                                 {ch.endTime != null && ` · ${formatDuration(ch.startTime, ch.endTime)}`}
                                             </span>
@@ -190,12 +184,12 @@ export default function AddCourseModal({ isOpen, onClose, onAdd }) {
                                     ))}
                                 </div>
 
-                                <div className="modal-actions">
-                                    <button className="btn-secondary" onClick={() => setStep(1)}>
+                                <div className="modal-footer">
+                                    <button style={{ padding: '6px 12px', background: '#fff', border: '2px solid #000', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }} onClick={() => setStep(1)}>
                                         ← Volver
                                     </button>
-                                    <button className="btn-primary" onClick={handleConfirm}>
-                                        Agregar Curso
+                                    <button style={{ padding: '6px 12px', background: '#000', color: '#fff', border: '2px solid #000', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }} onClick={handleConfirm}>
+                                        Confirmar y Agregar
                                     </button>
                                 </div>
                             </>
