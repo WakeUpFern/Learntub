@@ -3,19 +3,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
-import CourseCard from '@/components/CourseCard';
 import AddCourseModal from '@/components/AddCourseModal';
 import { getCourses, addCourse, deleteCourse, getProgress } from '@/lib/store';
 
 export default function DashboardPage() {
     const router = useRouter();
-    const { user, loading: authLoading, supabaseAvailable, signOut } = useAuth();
+    const { user, loading: authLoading, signOut } = useAuth();
     const [courses, setCourses] = useState([]);
-    const [filter, setFilter] = useState('all'); // all | inProgress | completed
+    const [filter, setFilter] = useState('all');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [stats, setStats] = useState({ totalCourses: 0, completedCourses: 0, totalModules: 0, completedModules: 0 });
     const [mounted, setMounted] = useState(false);
     const [dataLoading, setDataLoading] = useState(true);
+    const [saveError, setSaveError] = useState('');
 
     const userId = user?.id || null;
 
@@ -35,35 +35,22 @@ export default function DashboardPage() {
         }
     }, [userId]);
 
+    useEffect(() => { setMounted(true); }, []);
     useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    useEffect(() => {
-        if (mounted && !authLoading) {
-            loadData();
-        }
+        if (mounted && !authLoading) loadData();
     }, [mounted, authLoading, loadData]);
-
-    const [saveError, setSaveError] = useState('');
 
     const handleAddCourse = async (courseData) => {
         setSaveError('');
         const result = await addCourse(courseData, userId);
-        if (result?.error) {
-            setSaveError(`Error al guardar: ${result.error}`);
-            console.error('[Dashboard] addCourse failed:', result.error);
-        }
+        if (result?.error) setSaveError(`Error al guardar: ${result.error}`);
         await loadData();
     };
 
     const handleDeleteCourse = async (id) => {
+        if (!confirm('¿Eliminar este curso?')) return;
         await deleteCourse(id, userId);
         await loadData();
-    };
-
-    const handleOpenCourse = (id) => {
-        router.push(`/course/${id}`);
     };
 
     const handleSignOut = async () => {
@@ -72,205 +59,201 @@ export default function DashboardPage() {
     };
 
     const filteredCourses = courses.filter(course => {
-        if (filter === 'inProgress') {
-            return course.completedModules > 0 && course.completedModules < course.totalModules;
-        }
-        if (filter === 'completed') {
-            return course.totalModules > 0 && course.completedModules === course.totalModules;
-        }
+        if (filter === 'inProgress') return course.completedModules > 0 && course.completedModules < course.totalModules;
+        if (filter === 'completed') return course.totalModules > 0 && course.completedModules === course.totalModules;
         return true;
     });
+
+    const progressPct = stats.totalModules > 0
+        ? Math.round((stats.completedModules / stats.totalModules) * 100)
+        : 0;
 
     if (!mounted || authLoading) return null;
 
     return (
         <div className="dashboard-page">
-            {/* Sidebar */}
-            <aside className="dashboard-sidebar">
-                <div className="sidebar-logo">
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                        <rect width="28" height="28" rx="8" fill="url(#logo-grad)" />
-                        <path d="M10 8l10 6-10 6V8z" fill="white" />
-                        <defs>
-                            <linearGradient id="logo-grad" x1="0" y1="0" x2="28" y2="28">
-                                <stop stopColor="#7c3aed" />
-                                <stop offset="1" stopColor="#a855f7" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span className="logo-text">LearnTube</span>
-                </div>
+            {/* SIDEBAR */}
+            <aside className="sidebar">
+                <div className="sidebar-logo">Learntub</div>
 
+                {/* Filtros de navegación */}
+                <div className="sidebar-section-label">Biblioteca</div>
                 <nav className="sidebar-nav">
                     <button
                         className={`sidebar-link ${filter === 'all' ? 'active' : ''}`}
                         onClick={() => setFilter('all')}
                     >
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                            <rect x="1" y="1" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                            <rect x="10" y="1" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                            <rect x="1" y="10" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                            <rect x="10" y="10" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                        </svg>
                         Todos los Cursos
-                        <span className="sidebar-count">{courses.length}</span>
+                        <span className="count">{courses.length}</span>
                     </button>
                     <button
                         className={`sidebar-link ${filter === 'inProgress' ? 'active' : ''}`}
                         onClick={() => setFilter('inProgress')}
                     >
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                            <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.5" />
-                            <path d="M9 4.5v4.5l3 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                        </svg>
                         En Progreso
                     </button>
                     <button
                         className={`sidebar-link ${filter === 'completed' ? 'active' : ''}`}
                         onClick={() => setFilter('completed')}
                     >
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                            <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.5" />
-                            <path d="M5.5 9.5l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
                         Completados
                     </button>
                 </nav>
 
+                {/* Árbol de cursos en sidebar */}
+                {courses.length > 0 && (
+                    <>
+                        <div className="sidebar-section-label">Cursos</div>
+                        {courses.map((course, i) => {
+                            const pct = course.totalModules > 0
+                                ? Math.round((course.completedModules / course.totalModules) * 100)
+                                : 0;
+                            const isDone = pct === 100 && course.totalModules > 0;
+                            return (
+                                <button
+                                    key={course.id}
+                                    className={`sidebar-tree-item ${isDone ? 'done' : ''}`}
+                                    onClick={() => router.push(`/course/${course.id}`)}
+                                    title={course.title}
+                                >
+                                    {String(i + 1).padStart(2, '0')}. {course.title.length > 22 ? course.title.slice(0, 22) + '…' : course.title}
+                                </button>
+                            );
+                        })}
+                    </>
+                )}
+
+                {/* Estadísticas */}
                 <div className="sidebar-stats">
-                    <h4>Tu Progreso</h4>
-                    <div className="stat-item">
-                        <span className="stat-label">Cursos</span>
-                        <span className="stat-value">{stats.completedCourses}/{stats.totalCourses}</span>
+                    <div className="sidebar-stats-title">Tu Progreso</div>
+                    <div className="stat-row">
+                        <span>Cursos</span>
+                        <span>{stats.completedCourses}/{stats.totalCourses}</span>
                     </div>
-                    <div className="stat-item">
-                        <span className="stat-label">Módulos</span>
-                        <span className="stat-value">{stats.completedModules}/{stats.totalModules}</span>
+                    <div className="stat-row">
+                        <span>Módulos</span>
+                        <span>{stats.completedModules}/{stats.totalModules}</span>
                     </div>
-                    <div className="stat-bar">
-                        <div
-                            className="stat-bar-fill"
-                            style={{
-                                width: `${stats.totalModules > 0 ? (stats.completedModules / stats.totalModules) * 100 : 0}%`
-                            }}
-                        />
+                    <div className="progress-track">
+                        <div className="progress-fill" style={{ width: `${progressPct}%` }} />
                     </div>
                 </div>
 
-                {/* Status & User Section */}
-                <div className="sidebar-bottom">
-
-                    {user ? (
-                        <div className="sidebar-user">
-                            <div className="user-info">
-                                {user.user_metadata?.avatar_url ? (
-                                    <img
-                                        src={user.user_metadata.avatar_url}
-                                        alt=""
-                                        className="user-avatar"
-                                    />
-                                ) : (
-                                    <div className="user-avatar-placeholder">
-                                        {(user.user_metadata?.full_name || user.email || '?').charAt(0).toUpperCase()}
-                                    </div>
-                                )}
-                                <div className="user-text">
-                                    <span className="user-name">{user.user_metadata?.full_name || 'Usuario'}</span>
-                                    <span className="user-email">{user.email}</span>
-                                </div>
+                {/* Usuario */}
+                {user ? (
+                    <div className="sidebar-user">
+                        {user.user_metadata?.avatar_url ? (
+                            <img src={user.user_metadata.avatar_url} alt="" className="user-avatar" />
+                        ) : (
+                            <div className="user-avatar-placeholder">
+                                {(user.user_metadata?.full_name || user.email || '?').charAt(0).toUpperCase()}
                             </div>
-                            <button className="btn-logout" onClick={handleSignOut} title="Cerrar sesión">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M6 14H3.33a1.33 1.33 0 01-1.33-1.33V3.33A1.33 1.33 0 013.33 2H6M10.67 11.33L14 8l-3.33-3.33M14 8H6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                            </button>
+                        )}
+                        <div>
+                            <span className="user-name">{user.user_metadata?.full_name || 'Usuario'}</span>
+                            <span className="user-email">{user.email}</span>
                         </div>
-                    ) : (
-                        <div className="sidebar-offline">
-                            <span className="offline-badge">Modo Offline</span>
-                        </div>
-                    )}
-                </div>
+                        <button className="btn-logout" onClick={handleSignOut} title="Salir">
+                            ×
+                        </button>
+                    </div>
+                ) : (
+                    <div className="sidebar-user">
+                        <span className="offline-badge">Offline</span>
+                    </div>
+                )}
             </aside>
 
-            {/* Main Content */}
+            {/* ÁREA PRINCIPAL */}
             <main className="dashboard-main">
-                <header className="dashboard-header">
+                <div className="dashboard-header">
                     <div>
                         <h1>Mis Cursos</h1>
                         <p className="dashboard-subtitle">
                             {courses.length === 0
-                                ? 'Agrega tu primer curso para comenzar'
-                                : `${courses.length} curso${courses.length !== 1 ? 's' : ''} en tu biblioteca`
-                            }
+                                ? 'Sin cursos. Agrega el primero.'
+                                : `${courses.length} curso${courses.length !== 1 ? 's' : ''} en tu biblioteca`}
                         </p>
                     </div>
-                    <button className="btn-add-course" onClick={() => setIsModalOpen(true)}>
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                            <path d="M9 3v12M3 9h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
-                        Agregar Curso
-                    </button>
-                </header>
+                    <button onClick={() => setIsModalOpen(true)}>+ Agregar Curso</button>
+                </div>
 
                 {saveError && (
                     <div className="dashboard-error-banner">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
-                            <path d="M8 5v3M8 10.5h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                        </svg>
                         {saveError}
-                        <button onClick={() => setSaveError('')} className="banner-close" aria-label="Cerrar">✕</button>
+                        <button className="banner-close" onClick={() => setSaveError('')}>✕</button>
                     </div>
                 )}
 
                 {dataLoading ? (
                     <div className="dashboard-loading">
-                        <span className="spinner large" />
-                        <p>Cargando cursos...</p>
+                        <span className="spinner" />
+                        Cargando cursos...
                     </div>
                 ) : filteredCourses.length === 0 ? (
                     <div className="dashboard-empty">
-                        {courses.length === 0 ? (
-                            <>
-                                <div className="empty-illustration">
-                                    <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-                                        <circle cx="60" cy="60" r="50" fill="url(#empty-grad)" fillOpacity="0.1" />
-                                        <rect x="35" y="40" width="50" height="35" rx="6" stroke="url(#empty-grad)" strokeWidth="2" strokeDasharray="4 4" />
-                                        <path d="M55 52l12 7.5-12 7.5V52z" fill="url(#empty-grad)" fillOpacity="0.5" />
-                                        <path d="M60 85v10M50 95h20" stroke="url(#empty-grad)" strokeWidth="2" strokeLinecap="round" />
-                                        <defs>
-                                            <linearGradient id="empty-grad" x1="30" y1="30" x2="90" y2="90">
-                                                <stop stopColor="#7c3aed" />
-                                                <stop offset="1" stopColor="#a855f7" />
-                                            </linearGradient>
-                                        </defs>
-                                    </svg>
-                                </div>
-                                <h2>Empieza tu Viaje de Aprendizaje</h2>
-                                <p>Pega un link de YouTube con capítulos y conviértelo en un curso estructurado.</p>
-                                <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-                                    Agregar mi Primer Curso
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <h2>No hay cursos en esta categoría</h2>
-                                <p>Prueba con otro filtro o agrega un nuevo curso.</p>
-                            </>
+                        <h2>{courses.length === 0 ? 'Sin cursos en tu biblioteca' : 'Sin cursos en esta categoría'}</h2>
+                        <p>{courses.length === 0 ? 'Agrega un video de YouTube con capítulos para comenzar.' : 'Prueba con otro filtro o agrega un nuevo curso.'}</p>
+                        {courses.length === 0 && (
+                            <button className="btn-primary" style={{ marginTop: '12px' }} onClick={() => setIsModalOpen(true)}>
+                                + Agregar mi Primer Curso
+                            </button>
                         )}
                     </div>
                 ) : (
-                    <div className="course-grid">
-                        {filteredCourses.map(course => (
-                            <CourseCard
-                                key={course.id}
-                                course={course}
-                                onOpen={handleOpenCourse}
-                                onDelete={handleDeleteCourse}
-                            />
-                        ))}
-                    </div>
+                    <table className="course-table">
+                        <thead>
+                            <tr>
+                                <th className="col-thumb">Miniatura</th>
+                                <th>Título</th>
+                                <th>Canal</th>
+                                <th>Progreso</th>
+                                <th>Estado</th>
+                                <th style={{ width: '60px' }}>Acc.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredCourses.map((course) => {
+                                const pct = course.totalModules > 0
+                                    ? Math.round((course.completedModules / course.totalModules) * 100)
+                                    : 0;
+                                const isDone = pct === 100 && course.totalModules > 0;
+                                const isInProgress = course.completedModules > 0 && !isDone;
+                                return (
+                                    <tr key={course.id} onClick={() => router.push(`/course/${course.id}`)}>
+                                        <td className="col-thumb">
+                                            <img src={course.thumbnailUrl} alt={course.title} />
+                                        </td>
+                                        <td><strong>{course.title}</strong></td>
+                                        <td>{course.channelName}</td>
+                                        <td className="col-progress-bar">
+                                            <div className="inline-progress">
+                                                <div className="inline-progress-fill" style={{ width: `${pct}%` }} />
+                                            </div>
+                                            <span style={{ fontSize: '10px' }}>{course.completedModules}/{course.totalModules} módulos ({pct}%)</span>
+                                        </td>
+                                        <td>
+                                            {isDone
+                                                ? <span className="status-badge done">Completado</span>
+                                                : isInProgress
+                                                    ? <span className="status-badge active">En Progreso</span>
+                                                    : <span className="status-badge pending">Pendiente</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <button
+                                                style={{ padding: '4px 8px', fontSize: '11px' }}
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteCourse(course.id); }}
+                                                title="Eliminar"
+                                            >
+                                                Eliminar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
                 )}
             </main>
 

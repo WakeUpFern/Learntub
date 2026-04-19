@@ -1,21 +1,21 @@
-import { Inter } from 'next/font/google';
+import { JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/components/AuthProvider';
 
-const inter = Inter({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-mono',
 });
 
 export const metadata = {
-  title: 'LearnTube — Tu YouTube para aprender',
-  description: 'Convierte videos de YouTube con capítulos en cursos de aprendizaje estructurados. Controla tu progreso y aprende a tu ritmo.',
+  title: 'LEARNTUB — SISTEMA DE APRENDIZAJE',
+  description: 'Interfaz técnica para la gestión de contenido estructurado en formato de video.',
   keywords: 'youtube, learning, courses, chapters, education',
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="es" className={inter.variable}>
+    <html lang="es" className={jetbrainsMono.variable}>
       <body>
         <AuthProvider>{children}</AuthProvider>
       </body>
